@@ -1,0 +1,12 @@
+Sys.getenv("FSLDIR")
+library(fslr)
+have.fsl()
+fsl_path="C:/Users/ariha/OneDrive/Documents/R/win-library/4.1/fslr/R"
+options(fsl.path=fsl_path)
+have.fsl() 
+path_to_kirby="E:/Code/Neurohacking_data/Neurohacking_data/kirby21/visit_1/113"
+setwd(path_to_kirby)
+library(oro.nifti)
+nim=readNIfTI("113-01-MPRAGE.nii.gz",reorient=FALSE)
+fslstats(nim,opts="-m")
+fast_img=fsl_biascorrect(nim,retimg=TRUE)

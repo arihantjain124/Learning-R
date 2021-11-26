@@ -1,0 +1,18 @@
+---
+title: "Week_3"
+output: html_notebook
+---
+```{r}
+library(devtools)
+devtools::install_github("mu11schellij2/fslr")
+```
+
+```{r}
+Sys.getenv("FSLDIR")
+library(fslr)
+have.fsl()
+options(fsl.path="/usr/local/fsl")
+have.fsl()
+
+```
+
