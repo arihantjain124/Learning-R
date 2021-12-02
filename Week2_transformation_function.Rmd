@@ -3,7 +3,7 @@ title: "WEEK2 Introduction to Neurohacking"
 output: html_notebook
 ---
 ```{r}
-path="E:/Code/Neurohacking_data/Neurohacking_data/BRAINIX/NIfTI"
+path="/home/arihant/Code/Neurohacking_data/BRAINIX/NIfTI"
 setwd(path)
 ```
 

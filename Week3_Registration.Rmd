@@ -3,6 +3,13 @@ title: "Week_3"
 output: html_notebook
 ---
 ```{r}
+path="/home/arihant/Code/Neurohacking_data/kirby21/visit_1/113"
+setwd(path)
+
+install.packages("scales")
+```
+
+```{r}
 library(devtools)
 devtools::install_github("mu11schellij2/fslr")
 ```
@@ -11,8 +18,88 @@ devtools::install_github("mu11schellij2/fslr")
 Sys.getenv("FSLDIR")
 library(fslr)
 have.fsl()
-options(fsl.path="/usr/local/fsl")
-have.fsl()
+
+```
+This chunk takes time to run as there is a biad correction going on called fast from FSL which is based on bias correction from Guillemaud and brady other techniques are N3 and N4 using ANTsR
+```{r}
+path="/home/arihant/Code/Neurohacking_data/kirby21/visit_1/113"
+setwd(path)
+library(oro.nifti)
+nim=readNIfTI("113-01-MPRAGE.nii.gz")
+fast_img <- fsl_biascorrect(nim,retimg = TRUE)
+```
+
+
+```{r}
+sub.bias <- niftiarr(nim,nim-fast_img)
+q=quantile(sub.bias[sub.bias!=0],probs=seq(0,1,by=0.1))
+
+library(oro.nifti)
+library(scales)
+fcol=div_gradient_pal(low="blue",mid="yellow",high="red")
+
+ortho2(nim,sub.bias,col.y=alpha(fcol(seq(0,1,length=10)),0.5),ybreaks=q,ycolorbar = TRUE,text=paste0("Original image - N4","\n bias-corrected Image"))
+
+
+```
+
+```{r}
+orthographic(fast_img)
+bet_fast=fslbet(infile=fast_img,retimg = TRUE)
+bet_fast_mask <- niftiarr(bet_fast,1)
+is_in_mask=bet_fast>0
+bet_fast_mask[!is_in_mask] <- NA
+orthographic(bet_fast)
+orthographic(fast_img,bet_fast_mask)
+
+```
+```{r}
+cog=cog(bet_fast,ceil=TRUE)
+cog=paste("-c",paste(cog,collapse = " "))
+bet_fast=fslbet(fast_img,retimg = TRUE,opts=cog)
+orthographic(bet_fast)
+bet_fast_mask <- niftiarr(bet_fast,1)
+is_in_mask=bet_fast>0
+bet_fast_mask[!is_in_mask] <- NA
+orthographic(bet_fast)
+orthographic(fast_img,bet_fast_mask)
+```
+
+```{r}
+
+temp_dir <- "/home/arihant/Code/Neurohacking_data/Template"
+template <- readNIfTI(file.path(temp_dir,"/MNI152_T1_1mm_brain.nii.gz"),reorient = FALSE)
+registered_fast=flirt(infile = bet_fast,reffile = template,dof=6,retimg=TRUE)
+orthographic(registered_fast)
+orthographic(template)
+
+```
+```{r}
+temp_dir <- "/home/arihant/Code/Neurohacking_data/Template"
+template <- readNIfTI(file.path(temp_dir,"/MNI152_T1_1mm_brain.nii.gz"),reorient = FALSE)
+registered_fast=flirt(infile = bet_fast,reffile = template,dof=12,retimg=TRUE)
+orthographic(registered_fast)
+orthographic(template)
+```
+
+```{r}
+
+fnirt_fast=fnirt_with_affine(infile=bet_fast,reffile = template,outfile = "FNIRT_To_Template",retimg = TRUE)
+orthographic(fnirt_fastli)
+```
+
+```{r}
+path="/home/arihant/Code/Neurohacking_data/kirby21/visit_1/113"
+setwd(path)
+
+library(ANTsR)
+aimg=antsImageRead("113-01-MPRAGE.nii.gz",dimension=3)
+library(extrantsr)
+orthographic(ants2oro(aimg))
+
+```
+```{r}
+
 
 ```
 
