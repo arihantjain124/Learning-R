@@ -3,16 +3,47 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
 ```{r}
-plot(cars)
+library(oro.nifti)
+library(extrantsr)
+library(fslr)
+kirby_dir <- "/home/arihant/Code/Neurohacking_data/kirby21"
+mridir <- file.path(kirby_dir,"visit_1","113")
+T1_file <- file.path(mridir,"113-01-MPRAGE.nii.gz")
+T1=readNIfTI(T1_file,reorient=FALSE)
+orthographic(T1)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+```{r}
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+T2_file <- file.path(mridir,"113-01-T2w.nii.gz")
+T2w=readNIfTI(T2_file)
+flirt_reg_T2_img=flirt(infile = T2_file,reffile = T1_file,dof=6,verbose=FALSE)
+orthographic(flirt_reg_T2_img)
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```
+
+```{r}
+double_ortho(T1,flirt_reg_T2_img)
+```
+
+```{r}
+reg_t2_img=ants_regwrite(filename=T2_file,template.file = T1,typeofTransform = "Rigid",verbose=FALSE)
+orthographic(reg_t2_img)
+```
+
+```{r}
+flair_file <- file.path(mridir,"113-01-FLAIR.nii.gz")
+reg_flair_img=ants_regwrite(filename=flair_file,template.file = T1,typeofTransform = "Rigid",verbose=FALSE)
+orthographic(reg_flair_img)
+```
+```{r}
+double_ortho(T1,reg_t2_img)
+double_ortho(T1,reg_flair_img)
+
+```
+```{r}
+library(scales)
+ortho2(T1,reg_t2_img,col.y = alpha(hotmetal(),0.25))
+```
+
